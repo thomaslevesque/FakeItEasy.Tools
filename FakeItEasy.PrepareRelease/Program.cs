@@ -11,7 +11,7 @@ namespace FakeItEasy.PrepareRelease
     public static class Program
     {
         private const string RepoOwner = "FakeItEasy";
-        private static string RepoName = string.Empty;
+        private static string repoName = string.Empty;
 
         public static async Task Main(string[] args)
         {
@@ -23,7 +23,7 @@ namespace FakeItEasy.PrepareRelease
                 return;
             }
 
-            RepoName = args[0];
+            repoName = args[0];
             var action = args[1];
             var version = args[2];
             var existingReleaseName = args[3];
@@ -96,7 +96,7 @@ namespace FakeItEasy.PrepareRelease
         {
             Console.WriteLine($"Fetching milestone '{existingMilestoneTitle}'...");
             var milestoneRequest = new MilestoneRequest { State = ItemStateFilter.Open };
-            var existingMilestone = (await gitHubClient.Issue.Milestone.GetAllForRepository(RepoOwner, RepoName, milestoneRequest))
+            var existingMilestone = (await gitHubClient.Issue.Milestone.GetAllForRepository(RepoOwner, repoName, milestoneRequest))
                 .Single(milestone => milestone.Title == existingMilestoneTitle);
             Console.WriteLine($"Fetched milestone '{existingMilestone.Title}'");
             return existingMilestone;
@@ -105,7 +105,7 @@ namespace FakeItEasy.PrepareRelease
         private static async Task<IReadOnlyCollection<Release>> GetAllReleases(this IGitHubClient gitHubClient)
         {
             Console.WriteLine("Fetching all GitHub releases...");
-            var allReleases = await gitHubClient.Repository.Release.GetAll(RepoOwner, RepoName);
+            var allReleases = await gitHubClient.Repository.Release.GetAll(RepoOwner, repoName);
             Console.WriteLine("Fetched all GitHub releases");
             return allReleases;
         }
@@ -114,7 +114,7 @@ namespace FakeItEasy.PrepareRelease
         {
             Console.WriteLine($"Fetching issues in milestone '{milestone.Title}'...'");
             var issueRequest = new RepositoryIssueRequest { Milestone = milestone.Number.ToString(), State = ItemStateFilter.All };
-            var issues = (await gitHubClient.Issue.GetAllForRepository(RepoOwner, RepoName, issueRequest)).ToList();
+            var issues = (await gitHubClient.Issue.GetAllForRepository(RepoOwner, repoName, issueRequest)).ToList();
             Console.WriteLine($"Fetched {issues.Count} issues in milestone '{milestone.Title}'");
             return issues;
         }
@@ -192,7 +192,7 @@ namespace FakeItEasy.PrepareRelease
         {
             var milestoneUpdate = new MilestoneUpdate { Title = version };
             Console.WriteLine($"Renaming milestone '{existingMilestone.Title}' to '{milestoneUpdate.Title}'...");
-            var updatedMilestone = await gitHubClient.Issue.Milestone.Update(RepoOwner, RepoName, existingMilestone.Number, milestoneUpdate);
+            var updatedMilestone = await gitHubClient.Issue.Milestone.Update(RepoOwner, repoName, existingMilestone.Number, milestoneUpdate);
             Console.WriteLine($"Renamed milestone '{existingMilestone.Title}' to '{updatedMilestone.Title}'");
         }
 
@@ -200,7 +200,7 @@ namespace FakeItEasy.PrepareRelease
         {
             var newMilestone = new NewMilestone(nextReleaseName);
             Console.WriteLine($"Creating new milestone '{newMilestone.Title}'...");
-            var nextMilestone = await gitHubClient.Issue.Milestone.Create(RepoOwner, RepoName, newMilestone);
+            var nextMilestone = await gitHubClient.Issue.Milestone.Create(RepoOwner, repoName, newMilestone);
             Console.WriteLine($"Created new milestone '{nextMilestone.Title}'");
             return nextMilestone;
         }
@@ -209,7 +209,7 @@ namespace FakeItEasy.PrepareRelease
         {
             var releaseUpdate = new ReleaseUpdate { Name = version, TagName = version, Prerelease = IsPreRelease(version) };
             Console.WriteLine($"Renaming GitHub release '{existingRelease.Name}' to {releaseUpdate.Name}...");
-            var updatedRelease = await gitHubClient.Repository.Release.Edit(RepoOwner, RepoName, existingRelease.Id, releaseUpdate);
+            var updatedRelease = await gitHubClient.Repository.Release.Edit(RepoOwner, repoName, existingRelease.Id, releaseUpdate);
             Console.WriteLine($"Renamed GitHub release '{existingRelease.Name}' to {updatedRelease.Name}");
         }
 
@@ -231,7 +231,7 @@ namespace FakeItEasy.PrepareRelease
 
             var newRelease = new NewRelease(nextReleaseName) { Draft = true, Name = nextReleaseName, Body = newReleaseBody.Trim() };
             Console.WriteLine($"Creating new GitHub release '{newRelease.Name}'...");
-            var nextRelease = await gitHubClient.Repository.Release.Create(RepoOwner, RepoName, newRelease);
+            var nextRelease = await gitHubClient.Repository.Release.Create(RepoOwner, repoName, newRelease);
             Console.WriteLine($"Created new GitHub release '{nextRelease.Name}'");
         }
 
@@ -239,7 +239,7 @@ namespace FakeItEasy.PrepareRelease
         {
             var issueUpdate = new IssueUpdate { Title = $"Release {version}", Milestone = existingMilestone.Number };
             Console.WriteLine($"Renaming release issue '{existingIssue.Title}' to '{issueUpdate.Title}'...");
-            var updatedIssue = await gitHubClient.Issue.Update(RepoOwner, RepoName, existingIssue.Number, issueUpdate);
+            var updatedIssue = await gitHubClient.Issue.Update(RepoOwner, repoName, existingIssue.Number, issueUpdate);
             Console.WriteLine($"Renamed release issue '{existingIssue.Title}' to '{updatedIssue.Title}'");
         }
 
@@ -253,7 +253,7 @@ namespace FakeItEasy.PrepareRelease
             };
 
             Console.WriteLine($"Creating new release issue '{newIssue.Title}'...");
-            var nextIssue = await gitHubClient.Issue.Create(RepoOwner, RepoName, newIssue);
+            var nextIssue = await gitHubClient.Issue.Create(RepoOwner, repoName, newIssue);
             Console.WriteLine($"Created new release issue #{nextIssue.Number}: '{newIssue.Title}'");
         }
     }
