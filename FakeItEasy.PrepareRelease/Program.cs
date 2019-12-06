@@ -11,21 +11,22 @@ namespace FakeItEasy.PrepareRelease
     public static class Program
     {
         private const string RepoOwner = "FakeItEasy";
-        private const string RepoName = "FakeItEasy";
+        private static string RepoName = string.Empty;
 
         public static async Task Main(string[] args)
         {
-            if (args.Length != 3 || (args[0] != "next" && args[0] != "fork"))
+            if (args.Length != 4 || (args[1] != "next" && args[1] != "fork"))
             {
                 Console.WriteLine("Illegal arguments. Must be one of the following:");
-                Console.WriteLine("  next <new release> <existing release>");
-                Console.WriteLine("  fork <new release> <existing release>");
+                Console.WriteLine("  <repo> next <new release> <existing release>");
+                Console.WriteLine("  <repo> fork <new release> <existing release>");
                 return;
             }
 
-            var action = args[0];
-            var version = args[1];
-            var existingReleaseName = args[2];
+            RepoName = args[0];
+            var action = args[1];
+            var version = args[2];
+            var existingReleaseName = args[3];
 
             var gitHubClient = GetAuthenticatedGitHubClient();
             var existingMilestone = await gitHubClient.GetExistingMilestone(existingReleaseName);

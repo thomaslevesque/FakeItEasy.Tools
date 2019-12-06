@@ -15,6 +15,14 @@
     {
         public static async Task Main(string[] args)
         {
+            if (args.Length != 1)
+            {
+                Console.WriteLine("Illegal arguments. Usage:");
+                Console.WriteLine("<program> <artifactsFolder>");
+            }
+
+            string artifactsFolder = args[0];
+
             var releaseName = GetAppVeyorTagName();
             if (string.IsNullOrEmpty(releaseName))
             {
@@ -34,8 +42,7 @@
             var release = releases.FirstOrDefault(r => r.Name == releaseName)
                 ?? throw new Exception($"Can't find release {releaseName}");
 
-            var artifactsFolder = Path.GetFullPath(Path.Combine(GetCurrentScriptDirectory(), "../../artifacts/output/"));
-            var artifactsPattern = "*.nupkg";
+            const string artifactsPattern = "*.nupkg";
 
             var artifacts = Directory.GetFiles(artifactsFolder, artifactsPattern);
             if (!artifacts.Any())
