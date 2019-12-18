@@ -9,10 +9,10 @@ namespace FakeItEasy.Tools
     {
         public static string GetAccessToken()
         {
+            var tokenFilePath = Path.Combine(GetCurrentScriptDirectory(), ".githubtoken");
             var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
             if (string.IsNullOrEmpty(token))
             {
-                var tokenFilePath = Path.Combine(GetCurrentScriptDirectory(), ".githubtoken");
                 if (File.Exists(tokenFilePath))
                 {
                     token = File.ReadAllText(tokenFilePath)?.Trim();
@@ -21,7 +21,7 @@ namespace FakeItEasy.Tools
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("GitHub access token is missing; please put it in tools/.githubtoken, or in the GITHUB_TOKEN environment variable.");
+                throw new Exception($"GitHub access token is missing; please put it in '{tokenFilePath}', or in the GITHUB_TOKEN environment variable.");
             }
 
             return token;
