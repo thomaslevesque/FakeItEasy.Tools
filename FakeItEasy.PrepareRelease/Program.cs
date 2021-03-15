@@ -8,7 +8,7 @@ namespace FakeItEasy.PrepareRelease
     using Octokit;
     using static FakeItEasy.Tools.ReleaseHelpers;
 
-    public static class Program
+    internal static class Program
     {
         private const string RepoOwner = "FakeItEasy";
         private static string repoName = string.Empty;
@@ -80,8 +80,8 @@ namespace FakeItEasy.PrepareRelease
         private static List<Release> GetReleasesForExistingMilestone(IReadOnlyCollection<Release> allReleases, Release existingRelease, string version)
         {
             var releasesForExistingMilestone = new List<Release> { existingRelease };
-            var versionRoot = IsPreRelease(version) ? version.Substring(0, version.IndexOf('-')) : version;
-            releasesForExistingMilestone.AddRange(allReleases.Where(release => release.Name.StartsWith(versionRoot)));
+            var versionRoot = IsPreRelease(version) ? version.Substring(0, version.IndexOf('-', StringComparison.Ordinal)) : version;
+            releasesForExistingMilestone.AddRange(allReleases.Where(release => release.Name.StartsWith(versionRoot, StringComparison.OrdinalIgnoreCase)));
             return releasesForExistingMilestone;
         }
 
@@ -169,12 +169,12 @@ namespace FakeItEasy.PrepareRelease
 
             Console.WriteLine("Prepare release anyhow? (y/N)");
             var response = Console.ReadLine().Trim();
-            if (string.Equals(response, "y", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(response, "y", StringComparison.Ordinal))
             {
                 return true;
             }
 
-            if (string.Equals(response, "n", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(response, "n", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -185,7 +185,7 @@ namespace FakeItEasy.PrepareRelease
 
         private static bool IsPreRelease(string version)
         {
-            return version.Contains('-');
+            return version.Contains('-', StringComparison.Ordinal);
         }
 
         private static async Task RenameMilestone(this IGitHubClient gitHubClient, Milestone existingMilestone, string version)
@@ -248,7 +248,7 @@ namespace FakeItEasy.PrepareRelease
             var newIssue = new NewIssue($"Release {nextReleaseName}")
             {
                 Milestone = nextMilestone.Number,
-                Body = existingIssue.Body.Replace("[x]", "[ ]"),
+                Body = existingIssue.Body.Replace("[x]", "[ ]", StringComparison.OrdinalIgnoreCase),
                 Labels = { "build", "documentation" }
             };
 

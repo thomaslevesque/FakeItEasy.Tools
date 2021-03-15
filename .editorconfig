@@ -1,0 +1,4 @@
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none    # Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2201.severity = none    # Exception type System.Exception is not sufficiently specific
+dotnet_diagnostic.CA1303.severity = none    # Do not pass literals as localized parameters

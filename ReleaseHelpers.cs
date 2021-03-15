@@ -10,6 +10,11 @@ namespace FakeItEasy.Tools
     {
         public static ICollection<int> GetIssueNumbersReferencedFromReleases(IEnumerable<Release> releases)
         {
+            if (releases is null)
+            {
+                throw new System.ArgumentNullException(nameof(releases));
+            }
+
             var issuesReferencedFromRelease = new HashSet<int>();
             foreach (var release in releases)
             {
