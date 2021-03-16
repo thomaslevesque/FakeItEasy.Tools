@@ -8,10 +8,9 @@
     using FakeItEasy.Tools;
     using Octokit;
     using static FakeItEasy.Tools.ReleaseHelpers;
-    using static FakeItEasy.Tools.ToolHelpers;
     using static SimpleExec.Command;
 
-    public class Program
+    internal static class Program
     {
         public static async Task Main(string[] args)
         {
