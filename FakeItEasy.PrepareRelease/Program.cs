@@ -169,12 +169,12 @@ namespace FakeItEasy.PrepareRelease
 
             Console.WriteLine("Prepare release anyhow? (y/N)");
             var response = Console.ReadLine().Trim();
-            if (string.Equals(response, "y", StringComparison.Ordinal))
+            if (string.Equals(response, "y", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            if (string.Equals(response, "n", StringComparison.Ordinal))
+            if (string.Equals(response, "n", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
