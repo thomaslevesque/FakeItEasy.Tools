@@ -249,8 +249,11 @@ namespace FakeItEasy.PrepareRelease
             {
                 Milestone = nextMilestone.Number,
                 Body = existingIssue.Body.Replace("[x]", "[ ]", StringComparison.OrdinalIgnoreCase),
-                Labels = { "build", "documentation" }
             };
+            foreach (var label in existingIssue.Labels)
+            {
+                newIssue.Labels.Add(label.Name);
+            }
 
             Console.WriteLine($"Creating new release issue '{newIssue.Title}'...");
             var nextIssue = await gitHubClient.Issue.Create(RepoOwner, repoName, newIssue);
