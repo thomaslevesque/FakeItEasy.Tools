@@ -1,6 +1,6 @@
+using FakeItEasy.PrepareRelease;
 using FakeItEasy.Tools;
 using Octokit;
-using static FakeItEasy.PrepareRelease.GitHubHelper;
 using static FakeItEasy.Tools.ReleaseHelpers;
 
 if (args.Length != 4 || (args[1] != "next" && args[1] != "fork"))
@@ -11,21 +11,24 @@ if (args.Length != 4 || (args[1] != "next" && args[1] != "fork"))
     return;
 }
 
-RepoName = args[0];
+const string repoOwner = "FakeItEasy";
+var repoName = args[0];
 var action = args[1];
 var version = args[2];
 var existingReleaseName = args[3];
 
 var gitHubClient = GetAuthenticatedGitHubClient();
-var existingMilestone = await gitHubClient.GetExistingMilestone(existingReleaseName);
-var issuesInExistingMilestone = await gitHubClient.GetIssuesInMilestone(existingMilestone);
+var gitHubHelper = new GitHubHelper(gitHubClient, repoOwner, repoName);
+
+var existingMilestone = await gitHubHelper.GetExistingMilestone(existingReleaseName);
+var issuesInExistingMilestone = await gitHubHelper.GetIssuesInMilestone(existingMilestone);
 var existingReleaseIssue = GetExistingReleaseIssue(issuesInExistingMilestone, existingReleaseName);
 
 if (action == "next")
 {
     var nextReleaseName = existingReleaseName;
 
-    var allReleases = await gitHubClient.GetAllReleases();
+    var allReleases = await gitHubHelper.GetAllReleases();
     var existingRelease = allReleases.Single(release => release.Name == existingReleaseName && release.Draft);
 
     var releasesForExistingMilestone = GetReleasesForExistingMilestone(allReleases, existingRelease, version);
@@ -46,22 +49,22 @@ if (action == "next")
     }
     else
     {
-        await gitHubClient.RenameMilestone(existingMilestone, version);
-        nextMilestone = await gitHubClient.CreateNextMilestone(nextReleaseName);
+        await gitHubHelper.RenameMilestone(existingMilestone, version);
+        nextMilestone = await gitHubHelper.CreateNextMilestone(nextReleaseName);
     }
 
-    await gitHubClient.UpdateRelease(existingRelease, version);
-    await gitHubClient.CreateNextRelease(nextReleaseName);
-    await gitHubClient.UpdateIssue(existingReleaseIssue, existingMilestone, version);
-    await gitHubClient.CreateNextIssue(existingReleaseIssue, nextMilestone, nextReleaseName);
+    await gitHubHelper.UpdateRelease(existingRelease, version);
+    await gitHubHelper.CreateNextRelease(nextReleaseName);
+    await gitHubHelper.UpdateIssue(existingReleaseIssue, existingMilestone, version);
+    await gitHubHelper.CreateNextIssue(existingReleaseIssue, nextMilestone, nextReleaseName);
 }
 else
 {
     var nextReleaseName = version;
 
-    var nextMilestone = await gitHubClient.CreateNextMilestone(nextReleaseName);
-    await gitHubClient.CreateNextRelease(nextReleaseName);
-    await gitHubClient.CreateNextIssue(existingReleaseIssue, nextMilestone, nextReleaseName);
+    var nextMilestone = await gitHubHelper.CreateNextMilestone(nextReleaseName);
+    await gitHubHelper.CreateNextRelease(nextReleaseName);
+    await gitHubHelper.CreateNextIssue(existingReleaseIssue, nextMilestone, nextReleaseName);
 }
 
 static List<Release> GetReleasesForExistingMilestone(IReadOnlyCollection<Release> allReleases, Release existingRelease, string version)
@@ -77,6 +80,13 @@ static GitHubClient GetAuthenticatedGitHubClient()
     var token = GitHubTokenSource.GetAccessToken();
     var credentials = new Credentials(token);
     return new GitHubClient(new ProductHeaderValue("FakeItEasy-build-scripts")) { Credentials = credentials };
+}
+
+static Issue GetExistingReleaseIssue(IList<Issue> issues, string existingReleaseName)
+{
+    var issue = issues.Single(i => i.Title == $"Release {existingReleaseName}");
+    Console.WriteLine($"Found release issue #{issue.Number}: '{issue.Title}'");
+    return issue;
 }
 
 static IList<Issue> ExcludeReleaseIssues(IList<Issue> issues, IEnumerable<Release> releases)

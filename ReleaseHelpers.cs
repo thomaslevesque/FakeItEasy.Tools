@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Octokit;
 
-public static class ReleaseHelpers
+internal static class ReleaseHelpers
 {
     public static ICollection<int> GetIssueNumbersReferencedFromReleases(IEnumerable<Release> releases)
     {
@@ -24,5 +24,10 @@ public static class ReleaseHelpers
         }
 
         return issuesReferencedFromRelease;
+    }
+
+    public static bool IsPreRelease(string version)
+    {
+        return version.Contains('-', StringComparison.Ordinal);
     }
 }
