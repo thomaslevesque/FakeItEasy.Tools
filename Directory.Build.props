@@ -16,8 +16,4 @@
         <OctokitVersion>0.31.0</OctokitVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Remove="Microsoft.CodeAnalysis.FxCopAnalyzers" />
-    </ItemGroup>
-
 </Project>
