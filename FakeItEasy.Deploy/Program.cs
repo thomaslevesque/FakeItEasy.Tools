@@ -5,11 +5,13 @@ using static FakeItEasy.Tools.ReleaseHelpers;
 using static SimpleExec.Command;
 
 var options = CommandLineOptions.Parse(args);
-if (!options.Validate())
+if (options.ShowHelp)
 {
     CommandLineOptions.ShowUsage();
-    return 1;
+    return;
 }
+
+options.Validate();
 
 var releaseName = options.TagName;
 
@@ -59,7 +61,7 @@ if (!options.DryRun)
 
 Console.WriteLine("Finished deploying");
 
-return 0;
+return;
 
 static IEnumerable<Release> GetPreReleasesContributingToThisRelease(Release release, IReadOnlyList<Release> releases)
 {

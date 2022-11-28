@@ -1,36 +1,34 @@
 namespace FakeItEasy.Deploy;
 
-internal record CommandLineOptions(string Repo, string TagName, string ArtifactsFolder, bool DryRun)
+internal record CommandLineOptions(string Repo, string TagName, string ArtifactsFolder, bool DryRun, bool ShowHelp)
 {
     public static CommandLineOptions Parse(string[] args)
     {
-        Action<string>? nextArgAction = null;
         string repo = string.Empty;
         string tagName = string.Empty;
         string artifactsFolder = string.Empty;
         bool dryRun = false;
-        foreach (var arg in args)
-        {
-            if (nextArgAction is not null)
-            {
-                nextArgAction(arg);
-                nextArgAction = null;
-                continue;
-            }
+        bool showHelp = false;
 
-            switch (arg)
+        for (int i = 0; i < args.Length; i++)
+        {
+            switch (args[i])
             {
+                case "-h":
+                case "--help":
+                    showHelp = true;
+                    break;
                 case "-r":
                 case "--repo":
-                    nextArgAction = value => repo = value;
+                    repo = ReadNext();
                     break;
                 case "-t":
                 case "--tag-name":
-                    nextArgAction = value => tagName = value;
+                    tagName = ReadNext();
                     break;
                 case "-a":
                 case "--artifacts-folder":
-                    nextArgAction = value => artifactsFolder = value;
+                    artifactsFolder = ReadNext();
                     break;
                 case "-d":
                 case "--dry-run":
@@ -38,22 +36,36 @@ internal record CommandLineOptions(string Repo, string TagName, string Artifacts
                     break;
                 default:
                     ShowUsage();
-                    throw new Exception($"Unknown command line options '{arg}'");
+                    throw new Exception($"Unknown command line option '{args[i]}'");
+            }
+
+            string ReadNext()
+            {
+                if (i + 1 >= args.Length)
+                {
+                    ShowUsage();
+                    throw new Exception($"Expected value for option '{args[i]}', but none was provided");
+                }
+
+                return args[++i];
             }
         }
 
-        return new CommandLineOptions(repo, tagName, artifactsFolder, dryRun);
+        return new CommandLineOptions(repo, tagName, artifactsFolder, dryRun, showHelp);
     }
 
     public static void ShowUsage()
     {
         Console.WriteLine("Usage: <program> <options>");
-        Console.WriteLine("  -r|--repo              [REQUIRED] Repository (owner/repo)");
+        Console.WriteLine("  -h|--help              Shows this help message");
+        Console.WriteLine("  -r|--repo              [REQUIRED] Repository (as \"<owner>/<repo>\")");
         Console.WriteLine("  -t|--tag-name          [REQUIRED] Tag name");
         Console.WriteLine("  -a|--artifacts-folder  [REQUIRED] Artifacts folder");
+        Console.WriteLine("  -d|--dry-run           Dry run (don't publish anything)");
+        Console.WriteLine();
     }
 
-    public bool Validate()
+    public void Validate()
     {
         var errors = new List<string>();
         if (string.IsNullOrEmpty(this.Repo))
@@ -78,9 +90,8 @@ internal record CommandLineOptions(string Repo, string TagName, string Artifacts
                 Console.Error.WriteLine(error);
             }
 
-            return false;
+            ShowUsage();
+            throw new ArgumentException("Invalid arguments");
         }
-
-        return true;
     }
 }
