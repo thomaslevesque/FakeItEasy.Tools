@@ -1,27 +1,21 @@
-﻿using FakeItEasy.Deploy;
+using FakeItEasy.Deploy;
 using FakeItEasy.Tools;
 using Octokit;
 using static FakeItEasy.Tools.ReleaseHelpers;
 using static SimpleExec.Command;
 
-if (args.Length != 1)
+var options = CommandLineOptions.Parse(args);
+if (!options.Validate())
 {
-    Console.WriteLine("Illegal arguments. Usage:");
-    Console.WriteLine("<program> <artifactsFolder>");
+    CommandLineOptions.ShowUsage();
+    return 1;
 }
 
-string artifactsFolder = args[0];
-
-var releaseName = GetAppVeyorTagName();
-if (string.IsNullOrEmpty(releaseName))
-{
-    Console.WriteLine("No Appveyor tag name supplied. Not deploying.");
-    return;
-}
+var releaseName = options.TagName;
 
 var nugetServerUrl = GetNuGetServerUrl();
 var nugetApiKey = GetNuGetApiKey();
-var (repoOwner, repoName) = GetRepositoryName();
+var (repoOwner, repoName) = GetRepositoryName(options.Repo);
 var gitHubClient = GetAuthenticatedGitHubClient();
 
 Console.WriteLine($"Deploying {releaseName}");
@@ -33,7 +27,7 @@ var release = releases.FirstOrDefault(r => r.Name == releaseName)
 
 const string artifactsPattern = "*.nupkg";
 
-var artifacts = Directory.GetFiles(artifactsFolder, artifactsPattern);
+var artifacts = Directory.GetFiles(options.ArtifactsFolder, artifactsPattern);
 if (!artifacts.Any())
 {
     throw new Exception("Can't find any artifacts to publish");
@@ -61,6 +55,8 @@ var commentText = $"This change has been released as part of [{repoName} {releas
 await Task.WhenAll(newIssueNumbers.Select(n => gitHubClient.Issue.Comment.Create(repoOwner, repoName, n, commentText)));
 
 Console.WriteLine("Finished deploying");
+
+return 0;
 
 static IEnumerable<Release> GetPreReleasesContributingToThisRelease(Release release, IReadOnlyList<Release> releases)
 {
@@ -102,9 +98,8 @@ static async Task UploadPackageToNuGetAsync(string path, string nugetServerUrl, 
     Console.WriteLine($"Pushed {name}");
 }
 
-static (string repoOwner, string repoName) GetRepositoryName()
+static (string repoOwner, string repoName) GetRepositoryName(string repoNameWithOwner)
 {
-    var repoNameWithOwner = GetRequiredEnvironmentVariable("APPVEYOR_REPO_NAME");
     var parts = repoNameWithOwner.Split('/');
     return (parts[0], parts[1]);
 }
@@ -115,8 +110,6 @@ static GitHubClient GetAuthenticatedGitHubClient()
     var credentials = new Credentials(token);
     return new GitHubClient(new ProductHeaderValue("FakeItEasy-build-scripts")) { Credentials = credentials };
 }
-
-static string? GetAppVeyorTagName() => Environment.GetEnvironmentVariable("APPVEYOR_REPO_TAG_NAME");
 
 static string GetNuGetServerUrl() => GetRequiredEnvironmentVariable("NUGET_SERVER_URL");
 
