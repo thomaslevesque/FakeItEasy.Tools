@@ -36,13 +36,13 @@ if (!artifacts.Any())
 Console.WriteLine($"Uploading artifacts to GitHub release {releaseName}");
 foreach (var file in artifacts)
 {
-    await UploadArtifactToGitHubReleaseAsync(gitHubClient, release, file);
+    await UploadArtifactToGitHubReleaseAsync(gitHubClient, release, file, options.DryRun);
 }
 
 Console.WriteLine($"Pushing nupkgs to {nugetServerUrl}");
 foreach (var file in artifacts)
 {
-    await UploadPackageToNuGetAsync(file, nugetServerUrl, nugetApiKey);
+    await UploadPackageToNuGetAsync(file, nugetServerUrl, nugetApiKey, options.DryRun);
 }
 
 var issueNumbersInCurrentRelease = GetIssueNumbersReferencedFromReleases(new[] { release });
@@ -50,9 +50,12 @@ var preReleases = GetPreReleasesContributingToThisRelease(release, releases);
 var issueNumbersInPreReleases = GetIssueNumbersReferencedFromReleases(preReleases);
 var newIssueNumbers = issueNumbersInCurrentRelease.Except(issueNumbersInPreReleases);
 
-Console.WriteLine($"Adding 'released as part of' notes to {newIssueNumbers.Count()} issues");
+Console.WriteLine($"Adding 'released as part of' notes to {newIssueNumbers.Count()} issues {(options.DryRun ? "(DRY RUN)" : string.Empty)}");
 var commentText = $"This change has been released as part of [{repoName} {releaseName}](https://github.com/{repoOwner}/{repoName}/releases/tag/{releaseName}).";
-await Task.WhenAll(newIssueNumbers.Select(n => gitHubClient.Issue.Comment.Create(repoOwner, repoName, n, commentText)));
+if (!options.DryRun)
+{
+    await Task.WhenAll(newIssueNumbers.Select(n => gitHubClient.Issue.Comment.Create(repoOwner, repoName, n, commentText)));
+}
 
 Console.WriteLine("Finished deploying");
 
@@ -71,10 +74,15 @@ static IEnumerable<Release> GetPreReleasesContributingToThisRelease(Release rele
     string BaseName(Release release) => release.Name.Split('-')[0];
 }
 
-static async Task UploadArtifactToGitHubReleaseAsync(GitHubClient client, Release release, string path)
+static async Task UploadArtifactToGitHubReleaseAsync(GitHubClient client, Release release, string path, bool dryRun)
 {
     var name = Path.GetFileName(path);
-    Console.WriteLine($"Uploading {name}");
+    Console.WriteLine($"Uploading {name}{(dryRun ? " (DRY RUN)" : string.Empty)}");
+    if (dryRun)
+    {
+        return;
+    }
+
     using (var stream = File.OpenRead(path))
     {
         var upload = new ReleaseAssetUpload
@@ -90,10 +98,15 @@ static async Task UploadArtifactToGitHubReleaseAsync(GitHubClient client, Releas
     }
 }
 
-static async Task UploadPackageToNuGetAsync(string path, string nugetServerUrl, string nugetApiKey)
+static async Task UploadPackageToNuGetAsync(string path, string nugetServerUrl, string nugetApiKey, bool dryRun)
 {
     string name = Path.GetFileName(path);
-    Console.WriteLine($"Pushing {name}");
+    Console.WriteLine($"Pushing {name}{(dryRun ? "(DRY RUN)" : string.Empty)}");
+    if (dryRun)
+    {
+        return;
+    }
+
     await RunAsync(ToolPaths.NuGet, $"push \"{path}\" -ApiKey {nugetApiKey} -Source {nugetServerUrl} -NonInteractive -ForceEnglishOutput", noEcho: true);
     Console.WriteLine($"Pushed {name}");
 }
