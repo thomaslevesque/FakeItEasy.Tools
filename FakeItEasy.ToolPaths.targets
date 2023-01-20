@@ -17,7 +17,7 @@
 {
     internal static class $(ClassName)
     {
-@(Tool -> '$(Indent)public const string %(ToolName) = @"$(NuGetPackageRoot)%(Identity)\%(Version)\tools\%(ToolExe)"$(Semicolon)')
+@(Tool -> '$(Indent)public const string %(Tool.ToolName) = @"$(NuGetPackageRoot)$([System.String]::Copy('%(Identity)').ToLowerInvariant())\%(Version)\tools\%(ToolExe)"$(Semicolon)')
     }
 }]]></FileContent>
     </PropertyGroup>
