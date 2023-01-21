@@ -109,7 +109,7 @@ static async Task UploadPackageToNuGetAsync(string path, string nugetServerUrl, 
         return;
     }
 
-    await RunAsync(ToolPaths.NuGet, $"push \"{path}\" -ApiKey {nugetApiKey} -Source {nugetServerUrl} -NonInteractive -ForceEnglishOutput", noEcho: true);
+    await RunAsync("dotnet", $"nuget push \"{path}\" --api-key {nugetApiKey} --source {nugetServerUrl} --force-english-output", noEcho: true);
     Console.WriteLine($"Pushed {name}");
 }
 
