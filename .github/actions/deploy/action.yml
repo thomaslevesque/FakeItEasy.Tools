@@ -5,9 +5,15 @@ inputs:
   artifact-name:
     required: true
     description: "Name of the artifact to deploy"
+  nuget-api-key:
+    required: true
+    description: "NuGet API key to publish the package"
   docs-output-prefix:
     required: true
     description: "Path prefix where the docs will be generated"
+  docs-workflow-token:
+    required: true
+    description: "GitHub token used to trigger the docs generation workflow"
   dry-run:
     required: true
     description: "Dry run (doesn't actually publish anything)"
@@ -15,9 +21,6 @@ inputs:
 runs:
   using: composite
   steps:
-  - uses: actions/checkout@v3
-    with:
-      submodules: true
   - name: Download artifacts
     uses: actions/download-artifact@v3
     with:
@@ -26,9 +29,9 @@ runs:
   - name: Deploy
     shell: bash
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
       NUGET_SERVER_URL: https://www.nuget.org/
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_API_KEY: ${{ inputs.nuget-api-key }}
     run: |
       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
         DRY_RUN_OPTION=--dry-run
@@ -37,7 +40,7 @@ runs:
   - name: Trigger docs generation
     shell: bash
     env:
-      GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      GH_TOKEN: ${{ inputs.docs-workflow-token }}
     run: |
       publishMode=auto-merge
       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
