@@ -7,7 +7,7 @@ public static class GitHubTokenSource
     public static string GetAccessToken()
     {
         var tokenFilePath = Path.Combine(GetCurrentScriptDirectory(), ".githubtoken");
-        var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+        var token = Environment.GetEnvironmentVariable("GH_TOKEN");
         if (string.IsNullOrEmpty(token))
         {
             if (File.Exists(tokenFilePath))
@@ -18,7 +18,7 @@ public static class GitHubTokenSource
 
         if (string.IsNullOrEmpty(token))
         {
-            throw new Exception($"GitHub access token is missing; please put it in '{tokenFilePath}', or in the GITHUB_TOKEN environment variable.");
+            throw new Exception($"GitHub access token is missing; please put it in '{tokenFilePath}', or in the GH_TOKEN environment variable.");
         }
 
         return token;
