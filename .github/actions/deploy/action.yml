@@ -11,9 +11,9 @@ inputs:
   docs-output-prefix:
     required: true
     description: "Path prefix where the docs will be generated"
-  docs-workflow-token:
+  github-token:
     required: true
-    description: "GitHub token used to trigger the docs generation workflow"
+    description: "GitHub token to run the deployment and docs generation"
   dry-run:
     required: true
     description: "Dry run (doesn't actually publish anything)"
@@ -29,7 +29,7 @@ runs:
   - name: Deploy
     shell: bash
     env:
-      GITHUB_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ inputs.github-token }}
       NUGET_SERVER_URL: https://www.nuget.org/
       NUGET_API_KEY: ${{ inputs.nuget-api-key }}
     run: |
@@ -40,7 +40,7 @@ runs:
   - name: Trigger docs generation
     shell: bash
     env:
-      GH_TOKEN: ${{ inputs.docs-workflow-token }}
+      GH_TOKEN: ${{ inputs.github-token }}
     run: |
       publishMode=auto-merge
       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
