@@ -11,9 +11,9 @@
 
     <PropertyGroup>
         <NoWarn>$(NoWarn),SA0001,SA1200,SA1516,CA1014,CA1812</NoWarn>
-        <SimpleExecVersion>6.1.0</SimpleExecVersion>
-        <NuGetVersion>4.1.0</NuGetVersion>
-        <OctokitVersion>0.31.0</OctokitVersion>
+        <SimpleExecVersion>12.0.0</SimpleExecVersion>
+        <NuGetVersion>6.9.1</NuGetVersion>
+        <OctokitVersion>10.0.0</OctokitVersion>
     </PropertyGroup>
 
 </Project>
