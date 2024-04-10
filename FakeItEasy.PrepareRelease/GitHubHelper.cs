@@ -3,7 +3,7 @@
 using Octokit;
 using static FakeItEasy.Tools.ReleaseHelpers;
 
-internal class GitHubHelper
+internal sealed class GitHubHelper
 {
     private readonly IGitHubClient gitHubClient;
     private readonly string repoOwner;

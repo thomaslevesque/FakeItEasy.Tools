@@ -100,7 +100,7 @@ static bool CrossReferenceIssues(ICollection<Issue> issuesInMilestone, ICollecti
     var issueNumbersInReleaseButNotMilestone = issueNumbersReferencedFromRelease.Except(issueNumbersInMilestone).ToList();
     var issuesInMilestoneButNotRelease = issuesInMilestone.Where(i => !issueNumbersReferencedFromRelease.Contains(i.Number)).ToList();
 
-    if (!issuesInMilestoneButNotRelease.Any() && !issueNumbersInReleaseButNotMilestone.Any())
+    if (issuesInMilestoneButNotRelease.Count == 0 && issueNumbersInReleaseButNotMilestone.Count == 0)
     {
         Console.WriteLine("The release refers to the same issues included in the milestone. Congratulations.");
         return true;
@@ -108,7 +108,7 @@ static bool CrossReferenceIssues(ICollection<Issue> issuesInMilestone, ICollecti
 
     Console.WriteLine();
 
-    if (issuesInMilestoneButNotRelease.Any())
+    if (issuesInMilestoneButNotRelease.Count > 0)
     {
         Console.WriteLine("The following issues are linked to the milestone but not referenced in the release:");
         foreach (var issue in issuesInMilestoneButNotRelease)
@@ -119,7 +119,7 @@ static bool CrossReferenceIssues(ICollection<Issue> issuesInMilestone, ICollecti
         Console.WriteLine();
     }
 
-    if (issueNumbersInReleaseButNotMilestone.Any())
+    if (issueNumbersInReleaseButNotMilestone.Count > 0)
     {
         Console.WriteLine("The following issues are referenced in the release but not linked to the milestone:");
         foreach (var issueNumber in issueNumbersInReleaseButNotMilestone)

@@ -1,6 +1,6 @@
 namespace FakeItEasy.Deploy;
 
-internal record CommandLineOptions(string Repo, string TagName, string ArtifactsFolder, bool DryRun, bool ShowHelp)
+internal sealed record CommandLineOptions(string Repo, string TagName, string ArtifactsFolder, bool DryRun, bool ShowHelp)
 {
     public static CommandLineOptions Parse(string[] args)
     {
@@ -83,7 +83,7 @@ internal record CommandLineOptions(string Repo, string TagName, string Artifacts
             errors.Add("Artifacts folder must be specified");
         }
 
-        if (errors.Any())
+        if (errors.Count > 0)
         {
             foreach (var error in errors)
             {

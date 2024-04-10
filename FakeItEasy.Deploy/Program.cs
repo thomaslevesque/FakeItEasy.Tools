@@ -30,7 +30,7 @@ var release = releases.FirstOrDefault(r => r.Name == releaseName)
 const string artifactsPattern = "*.nupkg";
 
 var artifacts = Directory.GetFiles(options.ArtifactsFolder, artifactsPattern);
-if (!artifacts.Any())
+if (artifacts.Length == 0)
 {
     throw new Exception("Can't find any artifacts to publish");
 }
